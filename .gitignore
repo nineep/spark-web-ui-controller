@@ -1,3 +1,5 @@
 spark-web-ui-controller
 .idea
 kubeconfig
+build-test.sh
+Dockerfile-test

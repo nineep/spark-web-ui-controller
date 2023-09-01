@@ -23,12 +23,11 @@ import (
 )
 
 const (
-	driverServiceSuffix = "-driver-svc"
-	ingressSuffix       = "-ingress"
-	// spark ui ingress backend path
-	sparkUIIngressPath = "/"
-	// spark ui ingress class
-	sparkUIIngressClass = "nginx"
+	driverServiceSuffix                          = "-driver-svc"
+	ingressSuffix                                = "-ingress"
+	sparkUIIngressPath                           = "/"     // spark ui ingress backend path
+	sparkUIIngressClass                          = "nginx" // spark ui ingress class
+	sparkUIIngressPathType networkingv1.PathType = networkingv1.PathTypePrefix
 )
 
 type Controller struct {
@@ -208,7 +207,7 @@ func (c *Controller) syncHandler(key string) error {
 
 	// spark driver svc should end with driverServiceSuffix
 	if !strings.HasSuffix(name, driverServiceSuffix) {
-		klog.Infof("Get namespace %s's service: %s, not end with %s, ignoring it", namespace, name, driverServiceSuffix)
+		klog.Infof("Get service: %s, not end with %s, ignoring it", key, driverServiceSuffix)
 		return nil
 	}
 	// Get the service resource with this namespace/name
@@ -278,9 +277,10 @@ func (c *Controller) getHostOfIngressFromService(service *corev1.Service) string
 	return getPodNameFromService(service) + c.hostsuffix
 }
 
-func (c *Controller) CreateSparkUIIngress(sparkUIService *corev1.Service) (*networkingv1.Ingress, error) {
+func (c *Controller) NewSparkUIIngress(sparkUIService *corev1.Service) *networkingv1.Ingress {
 	// 定义Ingress对象
 	sparkUIIC := sparkUIIngressClass
+	sparkUIIngressPT := sparkUIIngressPathType
 	ingress := &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            getIngressNameFromService(sparkUIService),
@@ -296,10 +296,11 @@ func (c *Controller) CreateSparkUIIngress(sparkUIService *corev1.Service) (*netw
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
 								{
-									Path: sparkUIIngressPath,
+									PathType: &sparkUIIngressPT,
+									Path:     sparkUIIngressPath,
 									Backend: networkingv1.IngressBackend{
 										Service: &networkingv1.IngressServiceBackend{
-											Name: getIngressNameFromService(sparkUIService),
+											Name: sparkUIService.Name,
 											Port: networkingv1.ServiceBackendPort{
 												Number: getSparkDriverUIPort(sparkUIService),
 											},
@@ -313,14 +314,20 @@ func (c *Controller) CreateSparkUIIngress(sparkUIService *corev1.Service) (*netw
 			},
 		},
 	}
+	return ingress
+}
 
+func (c *Controller) CreateSparkUIIngress(sparkUIService *corev1.Service) (*networkingv1.Ingress, error) {
+	// 定义Ingress对象
+	ingress := c.NewSparkUIIngress(sparkUIService)
 	// 创建或更新Ingress对象
 	ctx := context.TODO()
 	_, err := c.kubeclientset.NetworkingV1().Ingresses(sparkUIService.Namespace).Create(ctx, ingress, metav1.CreateOptions{})
 	if err != nil {
 		_, err = c.kubeclientset.NetworkingV1().Ingresses(sparkUIService.Namespace).Update(ctx, ingress, metav1.UpdateOptions{})
 		if err != nil {
-			panic(err.Error())
+			//panic(err.Error())
+			return nil, err
 		}
 		klog.Infof("Ingress %s updated successfully", ingress.Name)
 	}
@@ -389,17 +396,27 @@ func (c *Controller) WatchServiceToOperateIngress(namespace string) error {
 // create spark ui ingress from driver svc, if ingress is not exist
 func (c *Controller) createSparkUIIngressFromService(service *corev1.Service) error {
 	ingressName := getIngressNameFromService(service)
-	ingress, err := c.ingressLister.Ingresses(service.Namespace).Get(ingressName)
+	ingressNamespace := service.Namespace
+	klog.Infof("Create ingressName:%s of ingressNamespace:%s ", ingressName, ingressNamespace)
+	ingress, err := c.ingressLister.Ingresses(ingressNamespace).Get(ingressName)
+	klog.Infof("Get ingress %s info：%s", ingressName, ingress)
+	if ingress == nil {
+		klog.Infof("Spark ui ingress: %s is not found, now create one ...", ingressName)
+		_, err = c.CreateSparkUIIngress(service)
+		if err != nil {
+			return err
+		}
+	}
 	if err != nil {
 		if errors.IsNotFound(err) {
-			klog.Infof("spark ui ingress with name: %s is not found, now create one ...", ingress.Name)
+			klog.Infof("Spark ui ingress: %s is not found, now create one ...", ingressName)
 			_, err = c.CreateSparkUIIngress(service)
 			if err != nil {
 				return err
 			}
 		}
 	} else {
-		klog.Infof("spark ui ingress with name: %s already exists", ingress.Name)
+		klog.Infof("Spark ui ingress: %s already exists", ingressName)
 	}
 	return nil
 }
