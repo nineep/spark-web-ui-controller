@@ -397,7 +397,7 @@ func (c *Controller) WatchServiceToOperateIngress(namespace string) error {
 func (c *Controller) createSparkUIIngressFromService(service *corev1.Service) error {
 	ingressName := getIngressNameFromService(service)
 	ingressNamespace := service.Namespace
-	klog.Infof("Create ingressName:%s of ingressNamespace:%s ", ingressName, ingressNamespace)
+	klog.Infof("Operate ingressName:%s of ingressNamespace:%s ", ingressName, ingressNamespace)
 	ingress, err := c.ingressLister.Ingresses(ingressNamespace).Get(ingressName)
 	klog.Infof("Get ingress %s info：%s", ingressName, ingress)
 	if ingress == nil {
