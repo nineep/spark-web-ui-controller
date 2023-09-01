@@ -15,7 +15,7 @@ Apache Spark provides a suite of web user interfaces (UIs) that you can use to m
 The process of compiling the go language is contained in the Dockerfile.
 Into the directory where the Dockerfile is located and run the below command. 
 ```Shell
-docker build -f Dockerfile -t nineep/spark-web-ui-controller:0.0.1 .
+docker build --platform linux/amd64 -f Dockerfile -t nineep/spark-web-ui-controller:0.0.1 .
 ```
 
 ## Useage

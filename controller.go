@@ -181,7 +181,7 @@ func (c *Controller) syncHandler(key string) error {
 
 	// spark driver svc should end with driverServiceSuffix
 	if !strings.HasSuffix(name, driverServiceSuffix) {
-		klog.Infof("Get service: %s, not end with %s, ignoring it", name, driverServiceSuffix)
+		klog.Infof("Get namespace %s's service: %s, not end with %s, ignoring it", namespace, name, driverServiceSuffix)
 		return nil
 	}
 	// Get the service resource with this namespace/name

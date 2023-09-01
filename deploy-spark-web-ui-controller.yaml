@@ -62,8 +62,6 @@ spec:
     metadata:
       labels:
         k8s-app: spark-web-ui-controller
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       serviceAccount: spark-web-ui-controller
       containers:
