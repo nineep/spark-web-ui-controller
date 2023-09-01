@@ -66,7 +66,7 @@ spec:
       serviceAccount: spark-web-ui-controller
       containers:
         - name: spark-web-ui-controller
-          image: nineep/spark-web-ui-controller:0.0.1
+          image: nineep/spark-web-ui-controller:0.1.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
