@@ -79,6 +79,29 @@ func NewController(
 			}
 		},
 	})
+	ingressInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			key, err := cache.MetaNamespaceKeyFunc(obj)
+			klog.Infof("Add ingress: %s", key)
+			if err == nil {
+				queue.Add(key)
+			}
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			key, err := cache.MetaNamespaceKeyFunc(newObj)
+			klog.Infof("Update ingress: %s", key)
+			if err == nil {
+				queue.Add(key)
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+			klog.Infof("Delete ingress: %s", key)
+			if err == nil {
+				queue.Add(key)
+			}
+		},
+	})
 	controller := &Controller{
 		kubeclientset:  kubeclientset,
 		servicesSynced: servicesInformer.Informer().HasSynced,
