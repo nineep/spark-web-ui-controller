@@ -36,8 +36,9 @@ func main() {
 
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, time.Second*30)
 	serviceInformer := informerFactory.Core().V1().Services()
+	ingressInformer := informerFactory.Networking().V1().Ingresses()
 
-	controller := NewController(hostSuffix, requestTimeout, kubeClient, serviceInformer)
+	controller := NewController(hostSuffix, requestTimeout, kubeClient, serviceInformer, ingressInformer)
 
 	//notice that there is no need to run Start methods in a separate goroutine. (i.e. go kubeInformerFactory.Start(
 	// stopCh)

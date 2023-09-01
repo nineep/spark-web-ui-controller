@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	coreinformerv1 "k8s.io/client-go/informers/core/v1"
+	networkingv1informerv1 "k8s.io/client-go/informers/networking/v1"
 	"k8s.io/client-go/kubernetes"
 	corelisterv1 "k8s.io/client-go/listers/core/v1"
 	networkinglisterv1 "k8s.io/client-go/listers/networking/v1"
@@ -50,7 +51,8 @@ func NewController(
 	hostsuffix string,
 	requestTimeout string,
 	kubeclientset kubernetes.Interface,
-	servicesInformer coreinformerv1.ServiceInformer) *Controller {
+	servicesInformer coreinformerv1.ServiceInformer,
+	ingressInformer networkingv1informerv1.IngressInformer) *Controller {
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
@@ -81,6 +83,8 @@ func NewController(
 		kubeclientset:  kubeclientset,
 		servicesSynced: servicesInformer.Informer().HasSynced,
 		servicesLister: servicesInformer.Lister(),
+		ingressSynced:  ingressInformer.Informer().HasSynced,
+		ingressLister:  ingressInformer.Lister(),
 		workqueue:      queue,
 		hostsuffix:     hostsuffix,
 		requestTimeout: requestTimeout,
@@ -108,7 +112,7 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 }
 
 func (c *Controller) HasSynced() bool {
-	return c.servicesSynced()
+	return c.servicesSynced() && c.ingressSynced()
 }
 
 // runWorker is a long-running function that will continually call the
