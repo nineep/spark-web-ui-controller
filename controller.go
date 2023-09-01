@@ -329,9 +329,9 @@ func (c *Controller) CreateSparkUIIngress(sparkUIService *corev1.Service) (*netw
 			//panic(err.Error())
 			return nil, err
 		}
-		klog.Infof("Ingress %s updated successfully", ingress.Name)
+		klog.Infof(">>>>>>Ingress %s updated successfully", ingress.Name)
 	}
-	klog.Infof("Ingress %s created successfully", ingress.Name)
+	klog.Infof(">>>>>>Ingress %s created successfully", ingress.Name)
 	return ingress, nil
 }
 
