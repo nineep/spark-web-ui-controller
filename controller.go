@@ -272,9 +272,14 @@ func getSparkDriverUIPort(service *corev1.Service) int32 {
 }
 
 func (c *Controller) getHostOfIngressFromService(service *corev1.Service) string {
-	// host子域名为spark driver pod name，即driverPod.Name + hostSuffix
-	// 注意host域名解析需要配置成泛解析
-	return getPodNameFromService(service) + c.hostsuffix
+	// 注意：host域名解析需要配置成泛解析，每级域名不超过63字符，域名总长不超过253字符
+
+	// host子域名根据spark driver pod name命名，即driverPodName + hostSuffix
+	podName := getPodNameFromService(service)
+
+	// host子域名截取driverPodName后23位，即"16位ID" + "-driver"，解决域名字符串长度限制问题
+	podNameSuffix := string([]byte(podName)[len(podName)-23:])
+	return podNameSuffix + c.hostsuffix
 }
 
 func (c *Controller) NewSparkUIIngress(sparkUIService *corev1.Service) *networkingv1.Ingress {
