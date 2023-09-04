@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress-02
+spec:
+  ingressClassName: nginx
+  defaultBackend:
+    service:
+      name: default-http-backend
+      port:
+        number: 80
+  rules:
+  - host: "f658158a446b70e6-driver.spark-ui.example.com"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: nginx-svc
+            port:
+              number: 4040
+#  - host: "*.foo.com"
+#    http:
+#      paths:
+#      - pathType: Prefix
+#        path: "/foo"
+#        backend:
+#          service:
+#            name: service2
+#            port:
+#              number: 80
+

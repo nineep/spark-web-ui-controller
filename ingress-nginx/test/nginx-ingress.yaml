@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "spark-ui.example.com"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/nginx01"
+        backend:
+          service:
+            name: nginx-svc
+            port:
+              number: 4040
+      - pathType: Prefix
+        path: "/nginx02"
+        backend:
+          service:
+            name: nginx-02-svc
+            port:
+              number: 4040
