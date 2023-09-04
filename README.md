@@ -23,6 +23,8 @@ Upload the image produced by the above steps to your repository, and run below c
 ```Shell
 kubectl apply -f deploy-spark-web-ui-controller.yaml
 ```
+## spark web UI address 
+http://driverPodService+hostsuffix   
 
 ## Reference
 https://github.com/kubernetes/sample-controller

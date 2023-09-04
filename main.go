@@ -53,7 +53,7 @@ func main() {
 func init() {
 	flag.StringVar(&kubeConfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 	flag.StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
-	flag.StringVar(&hostSuffix, "hostsuffix", ".spark-ui.example.com", "the host suffix ,"+"ingress address eg: driverPodName.spark-ui.example.com")
+	flag.StringVar(&hostSuffix, "hostsuffix", ".spark-ui.example.com", "the host suffix ,"+"ingress address eg: driverPodServiceName.spark-ui.example.com")
 	flag.StringVar(&requestTimeout, "request_timeout", "60s", "re"+
 		"quest spark ui timeout.")
 }
